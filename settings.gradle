@@ -1,0 +1,3 @@
+include ':lwjplayer'
+include ':app'
+rootProject.name = "LwjPlayer"
