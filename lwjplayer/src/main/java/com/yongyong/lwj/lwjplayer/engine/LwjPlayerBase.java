@@ -2,6 +2,7 @@ package com.yongyong.lwj.lwjplayer.engine;
 
 import android.content.Context;
 import android.view.Surface;
+import android.view.SurfaceHolder;
 
 import androidx.annotation.NonNull;
 
@@ -10,120 +11,124 @@ import com.yongyong.lwj.lwjplayer.LwjSpeedLevelEnum;
 /**
  * @author yongyong
  *
- * @mail 1947920597@qq.com
- *
- * desc:播放器interface
- *
- * @// TODO: 2020/10/17
+ * @desc:播放器父类
+ * 
+ * @// TODO: 2020/12/4
  */
-public interface LwjPlayerInterface {
+public abstract class LwjPlayerBase {
 
     /**
-     * 初始化
+     *
      * @param context
      */
-    void initPlayer(Context context);
+    public abstract void init(Context context);
 
     /**
      * 数据源
      *
      * @param url 播放地址
      */
-    void setDataSource(String url);
+    public abstract void setDataSource(String url);
 
     /**
      * 异步准备
      */
-    void prepare();
+    public abstract void prepare();
 
     /**
      * 播放
      */
-    void onStart();
+    public abstract void onStart();
 
     /**
      * 暂停
      */
-    void onPause();
+    public abstract void onPause();
 
     /**
      * 停止
      */
-    void onStop();
+    public abstract void onStop();
 
     /**
      * 重置
      */
-    void onReset();
+    public abstract void onReset();
 
     /**
      * 释放
      */
-    void onRelease();
+    public abstract void onRelease();
 
     /**
      *
      * @return 是否正在播放
      */
-    boolean isPlaying();
+    public abstract boolean isPlaying();
 
     /**
      *
      * @param time 调整进度
      */
-    void seekTo(long time);
+    public abstract void seekTo(long time);
 
     /**
      *
      * @return 当前播放的位置
      */
-    long getCurrentPosition();
+    public abstract long getCurrentPosition();
 
     /**
      *
      * @return 总时长
      */
-    long getDuration();
+    public abstract long getDuration();
 
     /**
      *
      * @param surface 渲染
      */
-    void setSurface(Surface surface);
+    public abstract void setSurface(Surface surface);
+
+    /**
+     *
+     * @param holder
+     */
+    public abstract void setDisplay(SurfaceHolder holder);
 
     /**
      * 音量
      * @param v1 左声道
      * @param v2 右声道
      */
-    void setVolume(float v1, float v2);
+    public abstract void setVolume(float v1, float v2);
 
     /**
      * 是否循环播放
      * @param isLooping
      */
-    void setLooping(boolean isLooping);
+    public abstract void setLooping(boolean isLooping);
 
     /**
      *
      * @return 是否循环播放
      */
-    boolean isLooping();
+    public abstract boolean isLooping();
 
     /**
      * 设置播放速度
      */
-    void setSpeed(LwjSpeedLevelEnum speed);
+    public abstract void setSpeed(LwjSpeedLevelEnum speed);
 
     /**
      *
      * @return 宽高
      */
-    int[] getVideoSize();
+    public abstract int[] getVideoSize();
 
     /**
      * 监听
      * @param listener
      */
-    void addPlayerListener(@NonNull LwjPlayerListener listener);
+    public abstract void addPlayerListener(@NonNull LwjPlayerListener listener);
 }

@@ -1,17 +1,17 @@
-package com.yongyong.lwj.lwjplayer.view;
+package com.yongyong.lwj.lwjplayer;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.SurfaceTexture;
 import android.view.Surface;
+import android.view.TextureView;
 import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.yongyong.lwj.lwjplayer.LwjRatioEnum;
-import com.yongyong.lwj.lwjplayer.engine.LwjPlayer;
+import com.yongyong.lwj.lwjplayer.engine.LwjPlayerBase;
 
 /**
  * @author yongyong
@@ -23,14 +23,14 @@ import com.yongyong.lwj.lwjplayer.engine.LwjPlayer;
  * @// TODO: 2020/10/17
  */
 @SuppressLint("ViewConstructor")
-public class LwjTextureView extends android.view.TextureView implements android.view.TextureView.SurfaceTextureListener {
+public class LwjTextureView extends TextureView implements LwjDrawingInterface, TextureView.SurfaceTextureListener {
 
     /**  */
     private SurfaceTexture mSurfaceTexture;
 
     /**  */
     @Nullable
-    private LwjPlayer mLwjPlayer;
+    private LwjPlayerBase mPlayer;
     private Surface mSurface;
 
     /** 视频旋转 */
@@ -60,8 +60,8 @@ public class LwjTextureView extends android.view.TextureView implements android.
         } else {
             mSurfaceTexture = surfaceTexture;
             mSurface = new Surface(surfaceTexture);
-            if (mLwjPlayer != null) {
-                mLwjPlayer.setSurface(mSurface);
+            if (mPlayer != null) {
+                mPlayer.setSurface(mSurface);
             }
         }
     }
@@ -81,12 +81,9 @@ public class LwjTextureView extends android.view.TextureView implements android.
 
     }
 
-    /**
-     * 绑定播放器
-     * @param player
-     */
-    public void attachToPlayer(@NonNull LwjPlayer player) {
-        mLwjPlayer = player;
+    @Override
+    public void attach(@NonNull LwjPlayerBase player) {
+        mPlayer = player;
     }
 
     /**
@@ -110,34 +107,29 @@ public class LwjTextureView extends android.view.TextureView implements android.
         }
     }
 
-    /**
-     * 尺寸
-     * @param ratioEnum
-     */
-    public void setScaleType(LwjRatioEnum ratioEnum) {
+    @Override
+    public void setRotationDegree(int degree) {
+        mRotationDegree = degree;
+        requestLayout();
+    }
+
+    @Override
+    public void setRatio(LwjRatioEnum ratioEnum) {
         mRatioEnum = ratioEnum;
         requestLayout();
     }
 
-    /**
-     *
-     * @param rotationDegree
-     */
-    public void setRotationDegree(int rotationDegree) {
-        mRotationDegree = rotationDegree;
-    }
-
-    /**
-     * 屏幕截图
-     * @return
-     */
-    public Bitmap screenCapture(){
+    @Override
+    public Bitmap screenCapture() {
         return getBitmap();
     }
 
-    /**
-     * 释放
-     */
+    @Override
+    public View getView() {
+        return this;
+    }
+
+    @Override
     public void release() {
         if (mSurface != null)
             mSurface.release();

@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">LwjPlayer</string>
+
+    <string name="main_tab_list">List</string>
+    <string name="main_tab_tik_tok">tikTok</string>
+    <string name="main_tab_tv">aboutUs</string>
 </resources>

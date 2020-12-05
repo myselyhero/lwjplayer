@@ -31,7 +31,7 @@ import java.util.TimerTask;
  * 
  * @// TODO: 2020/10/23
  */
-public class LwjPlayerCommonControllerView extends LwjPlayerControllerBaseView implements View.OnClickListener {
+public class LwjCommonControllerView extends LwjControllerBaseView implements View.OnClickListener {
 
     private String TAG = "LwjPlayerCommonControllerView";
 
@@ -49,15 +49,15 @@ public class LwjPlayerCommonControllerView extends LwjPlayerControllerBaseView i
     private SeekBar progressSeekBar;
     private TextView totalTextView;
 
-    public LwjPlayerCommonControllerView(@NonNull Context context) {
+    public LwjCommonControllerView(@NonNull Context context) {
         super(context);
     }
 
-    public LwjPlayerCommonControllerView(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public LwjCommonControllerView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public LwjPlayerCommonControllerView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public LwjCommonControllerView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
 
@@ -139,6 +139,16 @@ public class LwjPlayerCommonControllerView extends LwjPlayerControllerBaseView i
     }
 
     /**
+     * 更新进度条
+     * @param currencyPosition
+     */
+    @Override
+    public void currencyPosition(int currencyPosition) {
+        progressSeekBar.setProgress((int) mLwjPlayer.getCurrentPosition());
+        currentTextView.setText(longTimeToString(mLwjPlayer.getCurrentPosition()));
+    }
+
+    /**
      * 刷新了状态
      * @param statusEnum
      */
@@ -148,7 +158,6 @@ public class LwjPlayerCommonControllerView extends LwjPlayerControllerBaseView i
             case STATUS_PLAYING:
                 totalTextView.setText(longTimeToString(mLwjPlayer.getDuration()));
                 progressSeekBar.setMax((int) mLwjPlayer.getDuration());
-                startProgress();
                 thumbnailImageView.setVisibility(View.GONE);
                 playerButtonImageView.setVisibility(View.GONE);
                 break;
@@ -211,35 +220,5 @@ public class LwjPlayerCommonControllerView extends LwjPlayerControllerBaseView i
                 .apply(new RequestOptions()
                         .diskCacheStrategy(DiskCacheStrategy.ALL))
                 .into(thumbnailImageView);
-    }
-
-    /**
-     * 开始计时刷新进度s
-     */
-    private void startProgress(){
-        stopProgress();
-        progressTimer = new Timer();
-        progressTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                post(new Runnable() {
-                    @Override
-                    public void run() {
-                        progressSeekBar.setProgress((int) mLwjPlayer.getCurrentPosition());
-                        currentTextView.setText(longTimeToString(mLwjPlayer.getCurrentPosition()));
-                    }
-                });
-            }
-        },0,progressDefault);
-    }
-
-    /**
-     * 停止刷新进度的线程
-     */
-    private void stopProgress(){
-        if (progressTimer != null){
-            progressTimer.cancel();
-            progressTimer = null;
-        }
     }
 }

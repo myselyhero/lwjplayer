@@ -71,6 +71,14 @@ public final class LwjAudioFocusManager implements AudioManager.OnAudioFocusChan
     }
 
     /**
+     *
+     * @return
+     */
+    public int getVolume(){
+        return mAudioManager != null ? mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC) : -1;
+    }
+
+    /**
      * 请求获得焦点
      */
     public void requestFocus() {

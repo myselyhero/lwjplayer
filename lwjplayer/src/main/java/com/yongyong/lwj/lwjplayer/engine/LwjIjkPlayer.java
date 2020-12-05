@@ -4,6 +4,7 @@ import android.content.Context;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.view.Surface;
+import android.view.SurfaceHolder;
 
 import androidx.annotation.NonNull;
 
@@ -20,7 +21,7 @@ import tv.danmaku.ijk.media.player.IjkMediaPlayer;
  *
  * @// TODO: 2020/10/17
  */
-public class LwjPlayer implements LwjPlayerInterface {
+public class LwjIjkPlayer extends LwjPlayerBase {
 
     /**
      * 上下文
@@ -42,7 +43,7 @@ public class LwjPlayer implements LwjPlayerInterface {
      * @param context
      */
     @Override
-    public void initPlayer(@NonNull Context context) {
+    public void init(Context context) {
         mContext = context;
 
         mIjkPlayer = new IjkMediaPlayer();
@@ -230,6 +231,13 @@ public class LwjPlayer implements LwjPlayerInterface {
         if (!isUsable())
             return;
         mIjkPlayer.setSurface(surface);
+    }
+
+    @Override
+    public void setDisplay(SurfaceHolder holder) {
+        if (!isUsable())
+            return;
+        mIjkPlayer.setDisplay(holder);
     }
 
     /**
