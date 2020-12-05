@@ -12,11 +12,12 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.yongyong.lwj.lwjplayer.engine.LwjPlayer;
+import com.yongyong.lwj.lwjplayer.engine.LwjIjkPlayer;
+import com.yongyong.lwj.lwjplayer.engine.LwjMediaPlayer;
+import com.yongyong.lwj.lwjplayer.engine.LwjPlayerBase;
 import com.yongyong.lwj.lwjplayer.engine.LwjPlayerListener;
 import com.yongyong.lwj.lwjplayer.util.LwjAudioFocusManager;
-import com.yongyong.lwj.lwjplayer.view.LwjPlayerControllerBaseView;
-import com.yongyong.lwj.lwjplayer.view.LwjTextureView;
+import com.yongyong.lwj.lwjplayer.view.LwjControllerBaseView;
 
 /**
  * @author yongyong
@@ -27,7 +28,7 @@ import com.yongyong.lwj.lwjplayer.view.LwjTextureView;
  * 
  * @// TODO: 2020/10/17
  */
-public class LwjPlayerView extends FrameLayout {
+public class LwjPlayerView extends FrameLayout implements LwjPlayerViewInterface {
 
     private static final String TAG = "LwjPlayerView";
 
@@ -40,17 +41,22 @@ public class LwjPlayerView extends FrameLayout {
     /** 视频旋转信息 */
     public static final int MEDIA_INFO_VIDEO_ROTATION_CHANGED = 10001;
 
+    /** 使用系统播放器 */
+    public static final int MEDIA_PLAYER = 0;
+    /** 使用ijk播放器 */
+    public static final int MEDIA_PLAYER_IJK = 1;
+
     /**  */
     private Activity mActivity;
 
     /** 播放器实例 */
-    private LwjPlayer mLwjPlayer;
+    private LwjPlayerBase mPlayer;
 
     /** 渲染 */
-    private LwjTextureView mTextureView;
+    private LwjDrawingInterface mDrawingInterface;
 
     /** 控制器 */
-    private LwjPlayerControllerBaseView mControllerView;
+    private LwjControllerBaseView mControllerView;
 
     /** 容器 */
     private FrameLayout mFrameLayout;
@@ -77,7 +83,11 @@ public class LwjPlayerView extends FrameLayout {
     private LwjRatioEnum mRatioEnum = LwjRatioEnum.RATIO_DEFAULT;
 
     /** 音频焦点 */
+    private boolean isFocus;
     private LwjAudioFocusManager mFocusManager;
+
+    /** 播放器核心 */
+    private int playerCore = MEDIA_PLAYER;
 
     public LwjPlayerView(@NonNull Context context) {
         super(context);
@@ -106,218 +116,99 @@ public class LwjPlayerView extends FrameLayout {
         addView(mFrameLayout, params);
     }
 
-    /**
-     * 设置数据源
-     * @param dataSource
-     */
-    public void setDataSource(String dataSource){
+    @Override
+    public void setCore(int core) {
+        playerCore = core;
+    }
+
+    @Override
+    public void setDataSource(String dataSource) {
         if (TextUtils.isEmpty(dataSource))
             return;
         mDataSource = dataSource;
     }
 
-    /**
-     *
-     * @param ratioEnum
-     */
+    @Override
     public void setRatio(LwjRatioEnum ratioEnum) {
         mRatioEnum = ratioEnum;
-        if (mTextureView != null) {
-            mTextureView.setScaleType(ratioEnum);
+        if (mDrawingInterface != null) {
+            mDrawingInterface.setRatio(ratioEnum);
         }
     }
 
-    /**
-     * 设置音量
-     * @param l 左声道
-     * @param r 右声道
-     */
-    private void setVolume(float l, float r){
+    @Override
+    public void setVolume(float l, float r) {
         if (!isUsable()){
             return;
         }
-        mLwjPlayer.setVolume(l,r);
+        mPlayer.setVolume(l,r);
     }
 
-    /**
-     *
-     * @return
-     */
-    public boolean isPlayer(){
-        return mLwjPlayer != null && mLwjPlayer.isPlaying();
-    }
-
-    /**
-     * 开始播放
-     */
-    public void onStart(){
-
-        if (TextUtils.isEmpty(mDataSource)){
-            Log.e(LwjPlayerView.class.getSimpleName(), "onStart: url not null!!!");
-            return;
-        }
-
-        switch (mStatusEnum){
-            case STATUS_IDLE:
-                changeStatus(LwjStatusEnum.STATUS_PREPARING);
-                mLwjPlayer = new LwjPlayer();
-                mLwjPlayer.addPlayerListener(mPlayerListener);
-                mLwjPlayer.initPlayer(getContext());
-                mLwjPlayer.setLooping(isLooping);
-                mLwjPlayer.setDataSource(mDataSource);
-                mLwjPlayer.prepare();
-                mFrameLayout.setKeepScreenOn(true);
-                onInitTextureView();
-                break;
-            case STATUS_PAUSED:
-            case STATUS_PLAYING:
-                onInitAudioManager();
-                mLwjPlayer.onStart();
-                changeStatus(LwjStatusEnum.STATUS_PLAYING);
-                mFrameLayout.setKeepScreenOn(true);
-                break;
-        }
-    }
-
-    /**
-     * 暂停
-     */
-    public void onPause(){
+    @Override
+    public void seekTo(long to) {
         if (!isUsable())
             return;
-
-        if (mStatusEnum != LwjStatusEnum.STATUS_PLAYING && !isPlayer())
-            return;
-        mCurrentPosition = mLwjPlayer.getCurrentPosition();
-        mLwjPlayer.onPause();
-        changeStatus(LwjStatusEnum.STATUS_PAUSED);
-        onReleaseAudioManager();
-        mFrameLayout.setKeepScreenOn(false);
+        mPlayer.seekTo(to);
     }
 
-    /**
-     * 释放
-     */
-    public void onRelease(){
+    @Override
+    public long getDuration() {
+        return isUsable() ? mPlayer.getDuration() : 0;
+    }
 
-        if (mStatusEnum == LwjStatusEnum.STATUS_IDLE)
-            return;
-        onPause();
-        //释放播放器
-        if (mLwjPlayer != null) {
-            mLwjPlayer.onRelease();
-            mLwjPlayer = null;
+    @Override
+    public long getCurrentPosition() {
+        return isUsable() ? mPlayer.getCurrentPosition() : 0;
+    }
+
+    @Override
+    public void setFocus(boolean focus) {
+        isFocus = focus;
+        /** 设置了取消并且如果以获取则释放 */
+        if (!isFocus()){
+
         }
-        //释放TextureView
-        onRemoveTextureView();
-        //关闭AudioFocus监听
-        onReleaseAudioManager();
-        //关闭屏幕常亮
-        mFrameLayout.setKeepScreenOn(false);
-        //重置播放进度
-        mCurrentPosition = 0;
-        //切换转态
-        changeStatus(LwjStatusEnum.STATUS_IDLE);
     }
 
-    /**
-     *
-     * @return
-     */
-    public long getDuration(){
-        return isUsable() ? mLwjPlayer.getDuration() : 0;
+    @Override
+    public boolean isFocus() {
+        return isFocus;
     }
 
-    /**
-     *
-     * @param to
-     */
-    public void seekTo(long to){
-        if (!isUsable())
-            return;
-        mLwjPlayer.seekTo(to);
-    }
-
-    /**
-     *
-     * @return
-     */
-    public long getCurrentPosition(){
-        return isUsable() ? mLwjPlayer.getCurrentPosition() : 0;
-    }
-
-    public boolean isLooping() {
-        return isLooping;
-    }
-
+    @Override
     public void setLooping(boolean looping) {
         isLooping = looping;
     }
 
+    @Override
+    public boolean isLooping() {
+        return isLooping;
+    }
+
+    @Override
+    public void setVoice(boolean voice) {
+        isVoice = voice;
+        float volume = isVoice ? 0.0f : 1.0f;
+        setVolume(volume,volume);
+    }
+
+    @Override
     public boolean isVoice() {
         return isVoice;
     }
 
-    /**
-     * 设置是否静音
-     * @param voice
-     */
-    public void setVoice(boolean voice) {
-        isVoice = voice;
-        float volume = isVoice ? 0.0f : 1.0f;
-       setVolume(volume,volume);
-    }
-
-    public boolean isFullScreen() {
-        return isFullScreen;
-    }
-
+    @Override
     public void setFullScreen(boolean fullScreen) {
         isFullScreen = fullScreen;
     }
 
-    /* ---- 内部API ---- */
-
-    /**
-     *
-     * @return
-     */
-    private boolean isUsable() {
-        return mLwjPlayer != null;
+    @Override
+    public boolean isFullScreen() {
+        return isFullScreen;
     }
 
-    /**
-     *
-     */
-    private void onInitTextureView(){
-
-        onRemoveTextureView();
-
-        mTextureView = new LwjTextureView(getContext());
-        mTextureView.attachToPlayer(mLwjPlayer);
-        LayoutParams params = new LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                Gravity.CENTER);
-        mFrameLayout.addView(mTextureView, 0, params);
-    }
-
-    /**
-     *
-     */
-    private void onRemoveTextureView(){
-        if (mTextureView != null) {
-            mFrameLayout.removeView(mTextureView);
-            mTextureView.release();
-            mTextureView = null;
-        }
-    }
-
-    /**
-     *
-     * @param controllerBaseView
-     */
-    public void setControllerView(@NonNull LwjPlayerControllerBaseView controllerBaseView){
+    @Override
+    public void setControllerView(@NonNull LwjControllerBaseView controllerBaseView) {
         removeControllerView();
         mControllerView = controllerBaseView;
         if (mControllerView != null){
@@ -325,13 +216,141 @@ public class LwjPlayerView extends FrameLayout {
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT);
             mFrameLayout.addView(mControllerView, params);
-
             mControllerView.bindPlayer(this);
         }
     }
 
+    @Override
+    public boolean isPlayer() {
+        return mPlayer != null && mPlayer.isPlaying();
+    }
+
+    @Override
+    public void onStart() {
+        if (TextUtils.isEmpty(mDataSource)){
+            Log.e(TAG, "onStart: url not null!!!");
+            return;
+        }
+
+        switch (mStatusEnum){
+            case STATUS_IDLE:
+                initPlayer();
+                mFrameLayout.setKeepScreenOn(true);
+                changeStatus(LwjStatusEnum.STATUS_PREPARING);
+                break;
+            case STATUS_PAUSED:
+            case STATUS_PLAYING:
+            case STATUS_PREPARING:
+                initAudioManager();
+                if (mCurrentPosition > 0)
+                    mPlayer.seekTo(mCurrentPosition);
+                mPlayer.onStart();
+                changeStatus(LwjStatusEnum.STATUS_PLAYING);
+                mFrameLayout.setKeepScreenOn(true);
+                break;
+        }
+    }
+
+    @Override
+    public void onPause() {
+        if (!isUsable())
+            return;
+
+        if (mStatusEnum != LwjStatusEnum.STATUS_PLAYING && !isPlayer())
+            return;
+
+        mCurrentPosition = mPlayer.getCurrentPosition();
+        mPlayer.onPause();
+        changeStatus(LwjStatusEnum.STATUS_PAUSED);
+        releaseAudioManager();
+        mFrameLayout.setKeepScreenOn(false);
+    }
+
+    @Override
+    public void onRelease() {
+        if (mStatusEnum == LwjStatusEnum.STATUS_IDLE)
+            return;
+        /** 先暂停播放器 */
+        onPause();
+        /** 释放播放器 */
+        if (mPlayer != null) {
+            mPlayer.onStop();
+            mPlayer.onRelease();
+            mPlayer = null;
+        }
+        /** 释放TextureView */
+        removeTextureView();
+        /** 关闭AudioFocus监听 */
+        releaseAudioManager();
+        /** 关闭屏幕常亮 */
+        mFrameLayout.setKeepScreenOn(false);
+        /** 重置播放进度 */
+        mCurrentPosition = 0;
+        /** 切换转态 */
+        changeStatus(LwjStatusEnum.STATUS_IDLE);
+    }
+
+    /* ---- 内部方法 ---- */
+
+    /**
+     * 播放器是否可用
+     * @return
+     */
+    private boolean isUsable(){
+        return mPlayer != null;
+    }
+
+    /**
+     * 初始化播放器核心
+     */
+    private void initPlayer(){
+        if (MEDIA_PLAYER_IJK == playerCore){
+            mPlayer = new LwjIjkPlayer();
+        }else {
+            mPlayer = new LwjMediaPlayer();
+        }
+
+        mPlayer.addPlayerListener(mPlayerListener);
+        mPlayer.init(getContext());
+        mPlayer.setLooping(isLooping);
+        mPlayer.setDataSource(mDataSource);
+        mPlayer.prepare();
+    }
+
     /**
      *
+     */
+    private void initTextureView(){
+
+        removeTextureView();
+
+        if (MEDIA_PLAYER_IJK == playerCore){
+            mDrawingInterface = new LwjTextureView(getContext());
+        }else {
+            mDrawingInterface = new LwjSurfaceView(getContext());
+        }
+
+        mDrawingInterface.attach(mPlayer);
+        LayoutParams params = new LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                Gravity.CENTER);
+        mFrameLayout.addView(mDrawingInterface.getView(), 0, params);
+    }
+
+    /**
+     *
+     */
+    private void removeTextureView(){
+        if (mDrawingInterface != null) {
+            mFrameLayout.removeView(mDrawingInterface.getView());
+            mDrawingInterface.release();
+            mDrawingInterface = null;
+        }
+    }
+
+    /**
+     * 删除已添加的控制器
      */
     private void removeControllerView(){
         if (mControllerView != null) {
@@ -341,7 +360,7 @@ public class LwjPlayerView extends FrameLayout {
     }
 
     /**
-     *
+     * 播放器状态改变了
      * @param statusEnum
      */
     private void changeStatus(@NonNull LwjStatusEnum statusEnum){
@@ -353,7 +372,10 @@ public class LwjPlayerView extends FrameLayout {
     /**
      * 初始化音频焦点
      */
-    private void onInitAudioManager(){
+    private void initAudioManager(){
+        /** 已禁用则不获取 */
+        if (!isFocus())
+            return;
         if (mFocusManager == null) {
             mFocusManager = new LwjAudioFocusManager(getContext(), mFocusListener);
         }
@@ -363,7 +385,7 @@ public class LwjPlayerView extends FrameLayout {
     /**
      * 释放音频焦点
      */
-    private void onReleaseAudioManager(){
+    private void releaseAudioManager(){
         if (mFocusManager != null){
             mFocusManager.abandonFocus();
             mFocusManager = null;
@@ -378,7 +400,12 @@ public class LwjPlayerView extends FrameLayout {
     private LwjAudioFocusManager.LwjAudioFocusListener mFocusListener = new LwjAudioFocusManager.LwjAudioFocusListener() {
         @Override
         public void onAcquire() {
-            onStart();
+            post(new Runnable() {
+                @Override
+                public void run() {
+                    onStart();
+                }
+            });
             /**
              * 已禁音则不恢复音量
              */
@@ -389,7 +416,12 @@ public class LwjPlayerView extends FrameLayout {
 
         @Override
         public void onLose() {
-            onPause();
+            post(new Runnable() {
+                @Override
+                public void run() {
+                    onPause();
+                }
+            });
         }
 
         @Override
@@ -404,8 +436,9 @@ public class LwjPlayerView extends FrameLayout {
     private LwjPlayerListener mPlayerListener = new LwjPlayerListener() {
         @Override
         public void onPreparedEnd() {
-            onInitAudioManager();
-            mLwjPlayer.onStart();
+            initTextureView();
+            initAudioManager();
+            onStart();
             changeStatus(LwjStatusEnum.STATUS_PLAYING);
         }
 
@@ -430,17 +463,16 @@ public class LwjPlayerView extends FrameLayout {
                         onPause();
                     break;
                 case MEDIA_INFO_VIDEO_ROTATION_CHANGED:
-                    if (mTextureView != null)
-                        mTextureView.setRotationDegree(extra);
+                    if (mDrawingInterface != null)
+                        mDrawingInterface.setRotationDegree(extra);
                     break;
             }
         }
 
         @Override
         public void onSizeChanged(int width, int height) {
-            if (mTextureView != null) {
-                mTextureView.setScaleType(mRatioEnum);
-                mTextureView.setVideoSize(width, height);
+            if (mDrawingInterface != null) {
+                mDrawingInterface.setVideoSize(width, height);
             }
         }
 

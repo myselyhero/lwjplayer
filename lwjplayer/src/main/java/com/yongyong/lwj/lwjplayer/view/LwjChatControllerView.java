@@ -32,7 +32,7 @@ import java.util.TimerTask;
  * 
  * @// TODO: 2020/10/23
  */
-public class LwjPlayerChatControllerView extends LwjPlayerControllerBaseView implements View.OnClickListener {
+public class LwjChatControllerView extends LwjControllerBaseView implements View.OnClickListener {
 
     private static final String TAG = "LwjPlayerChatController";
 
@@ -57,15 +57,15 @@ public class LwjPlayerChatControllerView extends LwjPlayerControllerBaseView imp
     public static final int LWJ_PLAYER_CHAT_CONTROLLER_DOWNLOAD = 3;
     private OnLwjPlayerChatControllerListener controllerListener;
 
-    public LwjPlayerChatControllerView(@NonNull Context context) {
+    public LwjChatControllerView(@NonNull Context context) {
         super(context);
     }
 
-    public LwjPlayerChatControllerView(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public LwjChatControllerView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public LwjPlayerChatControllerView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public LwjChatControllerView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
 
@@ -176,13 +176,17 @@ public class LwjPlayerChatControllerView extends LwjPlayerControllerBaseView imp
     }
 
     @Override
+    public void currencyPosition(int currencyPosition) {
+        mSeekBar.setProgress((int) mLwjPlayer.getCurrentPosition());
+        mCurrentTextView.setText(longTimeToString(mLwjPlayer.getCurrentPosition()));
+    }
+
+    @Override
     public void changeStatus(LwjStatusEnum statusEnum) {
-        //startController();
         switch (statusEnum){
             case STATUS_PLAYING:
                 mDurationTextView.setText(longTimeToString(mLwjPlayer.getDuration()));
                 mSeekBar.setMax((int) mLwjPlayer.getDuration());
-                startProgress();
                 mThumbnailImageView.setVisibility(View.GONE);
                 mPlayerButtonImageView.setVisibility(View.GONE);
                 break;
@@ -237,7 +241,6 @@ public class LwjPlayerChatControllerView extends LwjPlayerControllerBaseView imp
     private void startController(){
         if (isVisible){
             stopController();
-            stopProgress();
         }else {
             showControllerAnim(mControllerBackground);
             showControllerAnim(mFunctionBackground);
@@ -248,7 +251,6 @@ public class LwjPlayerChatControllerView extends LwjPlayerControllerBaseView imp
                 }
             };
             mHandler.postDelayed(mRunnable,mControllerTime);
-            startProgress();
             isVisible = true;
         }
     }
@@ -264,36 +266,6 @@ public class LwjPlayerChatControllerView extends LwjPlayerControllerBaseView imp
         hideControllerAnim(mControllerBackground);
         hideControllerAnim(mFunctionBackground);
         isVisible = false;
-    }
-
-    /**
-     * 开始计时刷新进度s
-     */
-    private void startProgress(){
-        stopProgress();
-        progressTimer = new Timer();
-        progressTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                post(new Runnable() {
-                    @Override
-                    public void run() {
-                        mSeekBar.setProgress((int) mLwjPlayer.getCurrentPosition());
-                        mCurrentTextView.setText(longTimeToString(mLwjPlayer.getCurrentPosition()));
-                    }
-                });
-            }
-        },0,progressDefault);
-    }
-
-    /**
-     * 停止刷新进度的线程
-     */
-    private void stopProgress(){
-        if (progressTimer != null){
-            progressTimer.cancel();
-            progressTimer = null;
-        }
     }
 
     /**

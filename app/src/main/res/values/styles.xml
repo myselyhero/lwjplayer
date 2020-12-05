@@ -10,4 +10,7 @@
         <item name="windowNoTitle">true</item>
     </style>
 
+    <style name="TabLayoutTextStyle">
+        <item name="android:textSize">14sp</item>
+    </style>
 </resources>

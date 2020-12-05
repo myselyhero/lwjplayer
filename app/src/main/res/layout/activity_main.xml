@@ -1,15 +1,93 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#333333"
+    android:orientation="vertical"
+    android:background="@color/theme_background"
     tools:context=".MainActivity">
 
-    <com.yongyong.lwj.lwjplayer.LwjPlayerView
-        android:id="@+id/lwj_palyer"
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/main_pager"
+        android:layout_above="@id/main_tab"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:overScrollMode="never"/>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <LinearLayout
+        android:id="@+id/main_tab"
+        android:background="@color/theme"
+        android:layout_alignParentBottom="true"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:orientation="horizontal">
+        <LinearLayout
+            android:id="@+id/main_tab_tik"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+            <ImageView
+                android:id="@+id/main_tab_tik_iv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/main_tik_tok_normal"/>
+            <TextView
+                android:id="@+id/main_tab_tik_tv"
+                android:layout_marginTop="2dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="10sp"
+                android:textColor="#fff"
+                android:text="短视频"/>
+        </LinearLayout>
+
+        <!---->
+
+        <LinearLayout
+            android:id="@+id/main_tab_list"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+            <ImageView
+                android:id="@+id/main_tab_list_iv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/main_list_normal"/>
+            <TextView
+                android:id="@+id/main_tab_list_tv"
+                android:layout_marginTop="2dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="10sp"
+                android:textColor="#fff"
+                android:text="列表"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/main_tab_stream"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+            <ImageView
+                android:id="@+id/main_tab_stream_iv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/main_tv_normal"/>
+            <TextView
+                android:id="@+id/main_tab_stream_tv"
+                android:layout_marginTop="2dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="10sp"
+                android:textColor="#fff"
+                android:text="直播"/>
+        </LinearLayout>
+    </LinearLayout>
+</RelativeLayout>

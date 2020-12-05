@@ -31,13 +31,10 @@ import java.util.Timer;
  *
  * @// TODO: 2020/10/17
  */
-public abstract class LwjPlayerControllerBaseView extends FrameLayout implements GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener,
-        View.OnTouchListener{
+public abstract class LwjControllerBaseView extends FrameLayout implements GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener,
+        View.OnTouchListener {
 
-    private String TAG = "LwjPlayerControllerBaseView";
-
-    /**  */
-    protected Activity mActivity;
+    private String TAG = "LwjControllerBaseView";
 
     /** 是否锁定 */
     protected boolean isLock;
@@ -57,10 +54,6 @@ public abstract class LwjPlayerControllerBaseView extends FrameLayout implements
     /** 播放器实例 */
     protected LwjPlayerView mLwjPlayer;
 
-    /** 刷新进度 */
-    protected int progressDefault = 1000;
-    protected Timer progressTimer;
-
     /**  */
     private GestureDetector mGestureDetector;
     /** 是否关闭手势 */
@@ -70,17 +63,17 @@ public abstract class LwjPlayerControllerBaseView extends FrameLayout implements
     protected Handler mHandler = new Handler(Looper.getMainLooper());
     protected Runnable mRunnable;
 
-    public LwjPlayerControllerBaseView(@NonNull Context context) {
+    public LwjControllerBaseView(@NonNull Context context) {
         super(context);
         init();
     }
 
-    public LwjPlayerControllerBaseView(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public LwjControllerBaseView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         init();
     }
 
-    public LwjPlayerControllerBaseView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public LwjControllerBaseView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init();
     }
@@ -89,8 +82,6 @@ public abstract class LwjPlayerControllerBaseView extends FrameLayout implements
      *
      */
     private void init(){
-        mActivity = (Activity) getContext();
-
         mAudioManager = (AudioManager) getContext().getSystemService(Context.AUDIO_SERVICE);
         mVolume = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
 
@@ -200,6 +191,12 @@ public abstract class LwjPlayerControllerBaseView extends FrameLayout implements
      * @param buffering
      */
     public abstract void bufferUpdate(int buffering);
+
+    /**
+     *
+     * @param currencyPosition
+     */
+    public abstract void currencyPosition(int currencyPosition);
 
     /**
      * 改变播放器状态

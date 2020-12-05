@@ -41,5 +41,7 @@ dependencies {
 
     implementation "androidx.recyclerview:recyclerview:${dependConfig.recyclerView}"
 
+    implementation "com.google.android.material:material:${dependConfig.material}"
+
     implementation project(path: ':lwjplayer')
 }

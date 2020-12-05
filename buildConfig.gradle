@@ -11,6 +11,7 @@ ext {
     dependConfig = [
             glide                : "4.11.0",
             recyclerView         : "1.1.0",
-            ijkplayer_Java        : "0.8.8"
+            ijkplayer_Java       : "0.8.8",
+            material             : "1.2.1"
     ]
 }
