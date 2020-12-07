@@ -86,5 +86,12 @@
             android:textSize="14sp"
             android:textColor="#fff"
             android:text="00:00"/>
+
+        <ImageView
+            android:id="@+id/lwj_player_common_controller_bottom_full"
+            android:layout_width="40dp"
+            android:layout_height="match_parent"
+            android:scaleType="center"
+            android:src="@drawable/lwj_player_full_screen"/>
     </LinearLayout>
 </RelativeLayout>

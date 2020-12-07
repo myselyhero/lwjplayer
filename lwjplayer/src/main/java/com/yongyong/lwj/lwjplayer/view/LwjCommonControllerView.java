@@ -43,11 +43,13 @@ public class LwjCommonControllerView extends LwjControllerBaseView implements Vi
     private LinearLayout windowBackground;
 
     /** 底部 */
-    private LinearLayout bottomBackground;
     private ImageView voiceImageView;
     private TextView currentTextView;
     private SeekBar progressSeekBar;
     private TextView totalTextView;
+    private ImageView fullImageView;
+
+    private OnLwjPlayerDynamicControllerVoiceListener controllerVoiceListener;
 
     public LwjCommonControllerView(@NonNull Context context) {
         super(context);
@@ -73,14 +75,15 @@ public class LwjCommonControllerView extends LwjControllerBaseView implements Vi
 
         windowBackground = findViewById(R.id.lwj_player_common_controller_window);
 
-        bottomBackground = findViewById(R.id.lwj_player_common_controller_bottom);
         voiceImageView = findViewById(R.id.lwj_player_common_controller_bottom_voice);
         currentTextView = findViewById(R.id.lwj_player_common_controller_bottom_current);
         progressSeekBar = findViewById(R.id.lwj_player_common_controller_bottom_seek_bar);
         totalTextView = findViewById(R.id.lwj_player_common_controller_bottom_total);
+        fullImageView = findViewById(R.id.lwj_player_common_controller_bottom_full);
 
         playerButtonImageView.setOnClickListener(this);
         voiceImageView.setOnClickListener(this);
+        fullImageView.setOnClickListener(this);
 
         /**
          * 拖动监听
@@ -108,7 +111,7 @@ public class LwjCommonControllerView extends LwjControllerBaseView implements Vi
                 } else {
                     position = maxCanSeekTo;
                 }
-                mLwjPlayer.seekTo(position);
+                seekTo(position);
             }
         });
     }
@@ -132,7 +135,7 @@ public class LwjCommonControllerView extends LwjControllerBaseView implements Vi
 
         //解决缓冲进度不能100%问题
         if (buffering >= 95) {
-            progressSeekBar.setSecondaryProgress((int) mLwjPlayer.getDuration());
+            progressSeekBar.setSecondaryProgress((int) getDuration());
         } else {
             progressSeekBar.setSecondaryProgress(buffering * 10);
         }
@@ -143,9 +146,9 @@ public class LwjCommonControllerView extends LwjControllerBaseView implements Vi
      * @param currencyPosition
      */
     @Override
-    public void currencyPosition(int currencyPosition) {
-        progressSeekBar.setProgress((int) mLwjPlayer.getCurrentPosition());
-        currentTextView.setText(longTimeToString(mLwjPlayer.getCurrentPosition()));
+    public void currencyPosition(long currencyPosition) {
+        progressSeekBar.setProgress((int) getCurrentPosition());
+        currentTextView.setText(longTimeToString(getCurrentPosition()));
     }
 
     /**
@@ -153,11 +156,11 @@ public class LwjCommonControllerView extends LwjControllerBaseView implements Vi
      * @param statusEnum
      */
     @Override
-    public void changeStatus(LwjStatusEnum statusEnum) {
+    public void statusListener(LwjStatusEnum statusEnum) {
         switch (statusEnum){
             case STATUS_PLAYING:
-                totalTextView.setText(longTimeToString(mLwjPlayer.getDuration()));
-                progressSeekBar.setMax((int) mLwjPlayer.getDuration());
+                totalTextView.setText(longTimeToString(getDuration()));
+                progressSeekBar.setMax((int) getDuration());
                 thumbnailImageView.setVisibility(View.GONE);
                 playerButtonImageView.setVisibility(View.GONE);
                 break;
@@ -189,21 +192,21 @@ public class LwjCommonControllerView extends LwjControllerBaseView implements Vi
             /**
              * 播放暂停
              */
-            if (mLwjPlayer.isPlayer()){
-                mLwjPlayer.onPause();
-            }else {
-                mLwjPlayer.onStart();
-            }
+            startAndStop();
         }else if (v.getId() == R.id.lwj_player_common_controller_bottom_voice){
             /**
              * 音量开启与关闭
              */
-            mLwjPlayer.setVoice(mLwjPlayer.isVoice() ? false : true);
-            if (mLwjPlayer.isVoice()){
+            if (setVoice(!isVoice())){
                 voiceImageView.setImageResource(R.drawable.lwj_player_voice_off);
             }else {
                 voiceImageView.setImageResource(R.drawable.lwj_player_voice_on);
             }
+
+            if (controllerVoiceListener != null)
+                controllerVoiceListener.onVoice(isVoice());
+        }else if (v.getId() == R.id.lwj_player_common_controller_bottom_full){
+
         }
     }
 
@@ -220,5 +223,25 @@ public class LwjCommonControllerView extends LwjControllerBaseView implements Vi
                 .apply(new RequestOptions()
                         .diskCacheStrategy(DiskCacheStrategy.ALL))
                 .into(thumbnailImageView);
+    }
+
+    /**
+     *
+     * @param controllerVoiceListener
+     */
+    public void setControllerVoiceListener(OnLwjPlayerDynamicControllerVoiceListener controllerVoiceListener) {
+        this.controllerVoiceListener = controllerVoiceListener;
+    }
+
+    /**
+     * 监听语音的状态后保存
+     */
+    public interface OnLwjPlayerDynamicControllerVoiceListener {
+
+        /**
+         *
+         * @param voice
+         */
+        void onVoice(boolean voice);
     }
 }

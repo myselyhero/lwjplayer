@@ -7,10 +7,12 @@ import android.media.PlaybackParams;
 import android.net.Uri;
 import android.os.Build;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 
 import com.yongyong.lwj.lwjplayer.LwjSpeedLevelEnum;
 
@@ -103,9 +105,9 @@ public class LwjMediaPlayer extends LwjPlayerBase {
         if (mMediaPlayer.isPlaying()){
             onStop();
         }
+        mMediaPlayer.reset();
         mMediaPlayer.setSurface(null);
         mMediaPlayer.setDisplay(null);
-        mMediaPlayer.reset();
     }
 
     @Override
@@ -113,7 +115,7 @@ public class LwjMediaPlayer extends LwjPlayerBase {
         if (mMediaPlayer == null)
             return;
         if (mMediaPlayer.isPlaying()){
-            onStop();
+            onReset();
         }
         mMediaPlayer.setOnErrorListener(null);
         mMediaPlayer.setOnCompletionListener(null);

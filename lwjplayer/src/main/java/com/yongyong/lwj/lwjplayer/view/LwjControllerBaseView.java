@@ -8,6 +8,7 @@ import android.media.AudioManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -21,6 +22,7 @@ import com.yongyong.lwj.lwjplayer.LwjPlayerView;
 import com.yongyong.lwj.lwjplayer.LwjStatusEnum;
 
 import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * @author yongyong
@@ -52,7 +54,7 @@ public abstract class LwjControllerBaseView extends FrameLayout implements Gestu
     private AudioManager mAudioManager;
 
     /** 播放器实例 */
-    protected LwjPlayerView mLwjPlayer;
+    private LwjPlayerView mLwjPlayer;
 
     /**  */
     private GestureDetector mGestureDetector;
@@ -62,6 +64,10 @@ public abstract class LwjControllerBaseView extends FrameLayout implements Gestu
     /** 控制器隐藏线程 */
     protected Handler mHandler = new Handler(Looper.getMainLooper());
     protected Runnable mRunnable;
+
+    /** 刷新进度 */
+    protected int progressDefault = 1000;
+    protected Timer progressTimer;
 
     public LwjControllerBaseView(@NonNull Context context) {
         super(context);
@@ -193,16 +199,128 @@ public abstract class LwjControllerBaseView extends FrameLayout implements Gestu
     public abstract void bufferUpdate(int buffering);
 
     /**
-     *
-     * @param currencyPosition
+     * 刷新进度
+     * @param position
      */
-    public abstract void currencyPosition(int currencyPosition);
+    public abstract void currencyPosition(long position);
 
     /**
      * 改变播放器状态
      * @param statusEnum
      */
-    public abstract void changeStatus(LwjStatusEnum statusEnum);
+    public void changeStatus(LwjStatusEnum statusEnum){
+
+        /** 停止或启动进度条的刷新 */
+        switch (statusEnum){
+            case STATUS_PLAYING:
+            case STATUS_BUFFEEND:
+                startProgress();
+                break;
+            case STATUS_BUFFERING:
+            case STATUS_PAUSED:
+            case STATUS_IDLE:
+            case STATUS_COMPLETED:
+            case STATUS_PREPARING:
+            case STATUS_ERROR:
+                stopProgress();
+                break;
+        }
+
+        statusListener(statusEnum);
+    }
+
+    /**
+     *
+     * @param statusEnum
+     */
+    public abstract void statusListener(LwjStatusEnum statusEnum);
+
+    /**
+     * 开始计时刷新进度s
+     */
+    private void startProgress(){
+        stopProgress();
+        progressTimer = new Timer();
+        progressTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                post(new Runnable() {
+                    @Override
+                    public void run() {
+                        currencyPosition(mLwjPlayer.getCurrentPosition());
+                    }
+                });
+            }
+        },0,progressDefault);
+    }
+
+    /**
+     * 停止刷新进度的线程
+     */
+    private void stopProgress(){
+        if (progressTimer != null){
+            progressTimer.cancel();
+            progressTimer = null;
+        }
+    }
+
+    /**
+     *
+     */
+    protected void startAndStop(){
+        if (mLwjPlayer == null)
+            return;
+
+        if (mLwjPlayer.isPlayer()){
+            mLwjPlayer.onPause();
+        }else {
+            mLwjPlayer.onStart();
+        }
+    }
+
+    /**
+     *
+     * @param position
+     */
+    protected void seekTo(long position){
+        if (mLwjPlayer != null && position > 0)
+            mLwjPlayer.seekTo(position);
+    }
+
+    /**
+     *
+     * @return
+     */
+    protected long getDuration(){
+        return mLwjPlayer == null ? -1 : mLwjPlayer.getDuration();
+    }
+
+    /**
+     *
+     * @return
+     */
+    protected long getCurrentPosition(){
+        return mLwjPlayer == null ? -1 : mLwjPlayer.getCurrentPosition();
+    }
+
+    /**
+     *
+     * @param voice
+     */
+    protected boolean setVoice(boolean voice){
+        if (mLwjPlayer != null)
+            mLwjPlayer.setVoice(voice);
+
+        return isVoice();
+    }
+
+    /**
+     *
+     * @return
+     */
+    protected boolean isVoice(){
+        return mLwjPlayer != null && mLwjPlayer.isVoice();
+    }
 
     /**
      * 转换毫秒数成“分、秒”，如“01:53”。若超过60分钟则显示“时、分、秒”，如“01:01:30
