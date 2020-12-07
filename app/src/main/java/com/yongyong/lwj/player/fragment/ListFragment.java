@@ -1,8 +1,6 @@
 package com.yongyong.lwj.player.fragment;
 
-import android.graphics.Rect;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.yongyong.lwj.lwjplayer.LwjPlayerView;
 import com.yongyong.lwj.lwjplayer.LwjRatioEnum;
+import com.yongyong.lwj.lwjplayer.view.LwjCommonControllerView;
 import com.yongyong.lwj.player.R;
 import com.yongyong.lwj.player.adapter.ListAdapter;
 import com.yongyong.lwj.player.base.BaseFragment;
@@ -23,8 +22,6 @@ import com.yongyong.lwj.player.entity.ListEntity;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_IDLE;
 
 /**
  * @author yongyong
@@ -43,6 +40,7 @@ public class ListFragment extends BaseFragment {
     private List<ListEntity> dataSource = new ArrayList<>();
     private ListAdapter mAdapter;
 
+    /** 布局管理器 */
     private LinearLayoutManager linearLayoutManager;
     private int currentPosition = -1;
 
@@ -72,26 +70,13 @@ public class ListFragment extends BaseFragment {
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
-                if (newState == SCROLL_STATE_IDLE) { //滚动停止
-                    autoPlayVideo(recyclerView);
-                }
-            }
+                /** 停止滑动后获取可见的item */
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    int firstPosition = linearLayoutManager.findFirstCompletelyVisibleItemPosition();
+                    int lastPosition = linearLayoutManager.findLastCompletelyVisibleItemPosition();
 
-            private void autoPlayVideo(RecyclerView view) {
-                if (view == null)
-                    return;
-                for (int i = 0; i < view.getChildCount(); i++) {
-                    View itemView = view.getChildAt(i);
-                    if (itemView == null)
-                        continue;
-                    ListAdapter.ListViewHolder holder = (ListAdapter.ListViewHolder) itemView.getTag();
-                    Rect rect = new Rect();
-                    holder.frameLayout.getLocalVisibleRect(rect);
-                    int height = holder.frameLayout.getHeight();
-                    if (rect.top == 0 && rect.bottom == height) {
-                        startPlay(holder.position);
-                        break;
-                    }
+                    /** 如果lastPosition是最后一个则播放最后一个 */
+                    startPlay(lastPosition == dataSource.size() -1 ? lastPosition : firstPosition);
                 }
             }
         });
@@ -166,23 +151,41 @@ public class ListFragment extends BaseFragment {
             return;
 
         if (lwjPlayerView != null){
+
+            /** 释放播放器 */
             lwjPlayerView.onRelease();
             /** 从父布局中删除 */
             ViewParent parent = lwjPlayerView.getParent();
             if (parent instanceof FrameLayout) {
                 ((FrameLayout) parent).removeView(lwjPlayerView);
             }
+
+            /** 将上一个的缩略图放出来 */
+            if (currentPosition != -1){
+                View itemView = linearLayoutManager.findViewByPosition(currentPosition);
+                if (itemView != null){
+                    ListAdapter.ListViewHolder viewHolder = (ListAdapter.ListViewHolder) itemView.getTag();
+                    viewHolder.imageView.setVisibility(View.VISIBLE);
+                }
+            }
         }
+
+        View itemView = linearLayoutManager.findViewByPosition(position);
+        if (itemView == null)
+            return;
 
         ListEntity entity = dataSource.get(position);
         lwjPlayerView = new LwjPlayerView(getContext());
-        lwjPlayerView.setRatio(LwjRatioEnum.RATIO_16_9);
+        lwjPlayerView.setCore(LwjPlayerView.MEDIA_PLAYER_IJK);
+        lwjPlayerView.setRatio(LwjRatioEnum.RATIO_SHRINK);
         lwjPlayerView.setDataSource(entity.getVideoUrl());
 
-        View itemView = recyclerView.getChildAt(position);
-        if (itemView == null)
-            return;
+        LwjCommonControllerView commonControllerView = new LwjCommonControllerView(getContext());
+        commonControllerView.setThumbnail(entity.getVideoThumbnail());
+        lwjPlayerView.setControllerView(commonControllerView);
+
         ListAdapter.ListViewHolder viewHolder = (ListAdapter.ListViewHolder) itemView.getTag();
+        viewHolder.imageView.setVisibility(View.INVISIBLE);
         viewHolder.frameLayout.addView(lwjPlayerView);
         lwjPlayerView.onStart();
 

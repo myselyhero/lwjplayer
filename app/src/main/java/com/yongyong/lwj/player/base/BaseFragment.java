@@ -41,6 +41,27 @@ public abstract class BaseFragment extends Fragment {
         return super.onCreateView(inflater, container, savedInstanceState);
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (lwjPlayerView != null)
+            lwjPlayerView.onStart();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (lwjPlayerView != null)
+            lwjPlayerView.onPause();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (lwjPlayerView != null)
+            lwjPlayerView.onRelease();
+    }
+
     /**
      * 获取布局ID
      * @return

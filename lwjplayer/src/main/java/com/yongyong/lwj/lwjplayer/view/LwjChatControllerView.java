@@ -55,7 +55,7 @@ public class LwjChatControllerView extends LwjControllerBaseView implements View
     public static final int LWJ_PLAYER_CHAT_CONTROLLER_SHARE = 1;
     public static final int LWJ_PLAYER_CHAT_CONTROLLER_COLLECT = 2;
     public static final int LWJ_PLAYER_CHAT_CONTROLLER_DOWNLOAD = 3;
-    private OnLwjPlayerChatControllerListener controllerListener;
+    private OnLwjPlayerControllerListener controllerListener;
 
     public LwjChatControllerView(@NonNull Context context) {
         super(context);
@@ -120,7 +120,7 @@ public class LwjChatControllerView extends LwjControllerBaseView implements View
                 } else {
                     position = maxCanSeekTo;
                 }
-                mLwjPlayer.seekTo(position);
+                seekTo(position);
             }
         });
     }
@@ -131,23 +131,19 @@ public class LwjChatControllerView extends LwjControllerBaseView implements View
             /**
              * 播放暂停
              */
-            if (mLwjPlayer.isPlayer()){
-                mLwjPlayer.onPause();
-            }else {
-                mLwjPlayer.onStart();
-            }
+            startAndStop();
         }else if (v.getId() == R.id.lwj_player_chat_function_backtrack){
             if (controllerListener != null)
-                controllerListener.onCall(LWJ_PLAYER_CHAT_CONTROLLER_BACKTRACK);
+                controllerListener.onClick(v,LWJ_PLAYER_CHAT_CONTROLLER_BACKTRACK);
         }else if (v.getId() == R.id.lwj_player_chat_function_share){
             if (controllerListener != null)
-                controllerListener.onCall(LWJ_PLAYER_CHAT_CONTROLLER_SHARE);
+                controllerListener.onClick(v,LWJ_PLAYER_CHAT_CONTROLLER_SHARE);
         }else if (v.getId() == R.id.lwj_player_chat_function_collect){
             if (controllerListener != null)
-                controllerListener.onCall(LWJ_PLAYER_CHAT_CONTROLLER_COLLECT);
+                controllerListener.onClick(v,LWJ_PLAYER_CHAT_CONTROLLER_COLLECT);
         }else if (v.getId() == R.id.lwj_player_chat_function_download){
             if (controllerListener != null)
-                controllerListener.onCall(LWJ_PLAYER_CHAT_CONTROLLER_DOWNLOAD);
+                controllerListener.onClick(v,LWJ_PLAYER_CHAT_CONTROLLER_DOWNLOAD);
         }
     }
 
@@ -158,37 +154,33 @@ public class LwjChatControllerView extends LwjControllerBaseView implements View
 
     @Override
     protected void onDblClick() {
-        if (mLwjPlayer.isPlayer()){
-            mLwjPlayer.onPause();
-        }else {
-            mLwjPlayer.onStart();
-        }
+        startAndStop();
     }
 
     @Override
     public void bufferUpdate(int buffering) {
         //解决缓冲进度不能100%问题
         if (buffering >= 95) {
-            mSeekBar.setSecondaryProgress((int) mLwjPlayer.getDuration());
+            mSeekBar.setSecondaryProgress((int) getDuration());
         } else {
             mSeekBar.setSecondaryProgress(buffering * 10);
         }
     }
 
     @Override
-    public void currencyPosition(int currencyPosition) {
-        mSeekBar.setProgress((int) mLwjPlayer.getCurrentPosition());
-        mCurrentTextView.setText(longTimeToString(mLwjPlayer.getCurrentPosition()));
+    public void currencyPosition(long currencyPosition) {
+        mSeekBar.setProgress((int) getCurrentPosition());
+        mCurrentTextView.setText(longTimeToString(getCurrentPosition()));
     }
 
     @Override
-    public void changeStatus(LwjStatusEnum statusEnum) {
+    public void statusListener(LwjStatusEnum statusEnum) {
         switch (statusEnum){
             case STATUS_PLAYING:
-                mDurationTextView.setText(longTimeToString(mLwjPlayer.getDuration()));
-                mSeekBar.setMax((int) mLwjPlayer.getDuration());
-                mThumbnailImageView.setVisibility(View.GONE);
-                mPlayerButtonImageView.setVisibility(View.GONE);
+                mDurationTextView.setText(longTimeToString(getDuration()));
+                mSeekBar.setMax((int) getDuration());
+                hideControllerAnim(mThumbnailImageView);
+                hideControllerAnim(mPlayerButtonImageView);
                 break;
             case STATUS_BUFFERING:
 
@@ -198,10 +190,10 @@ public class LwjChatControllerView extends LwjControllerBaseView implements View
                 break;
             case STATUS_PAUSED:
             case STATUS_IDLE:
-                mPlayerButtonImageView.setVisibility(View.VISIBLE);
+                showControllerAnim(mPlayerButtonImageView);
                 break;
             case STATUS_COMPLETED:
-                mThumbnailImageView.setVisibility(View.VISIBLE);
+                showControllerAnim(mThumbnailImageView);
                 break;
             case STATUS_PREPARING:
                 //thumbnailImageView.setVisibility(View.GONE);
@@ -216,7 +208,7 @@ public class LwjChatControllerView extends LwjControllerBaseView implements View
      *
      * @param controllerListener
      */
-    public void setControllerListener(OnLwjPlayerChatControllerListener controllerListener) {
+    public void setControllerListener(OnLwjPlayerControllerListener controllerListener) {
         this.controllerListener = controllerListener;
     }
 
@@ -227,6 +219,7 @@ public class LwjChatControllerView extends LwjControllerBaseView implements View
     public void setThumbnail(String path){
         if (TextUtils.isEmpty(path))
             return;
+        showControllerAnim(mThumbnailImageView);
         Glide.with(getContext())
                 .asBitmap()
                 .load(path)
@@ -266,17 +259,5 @@ public class LwjChatControllerView extends LwjControllerBaseView implements View
         hideControllerAnim(mControllerBackground);
         hideControllerAnim(mFunctionBackground);
         isVisible = false;
-    }
-
-    /**
-     *
-     */
-    public interface OnLwjPlayerChatControllerListener {
-
-        /**
-         *
-         * @param code
-         */
-        void onCall(int code);
     }
 }

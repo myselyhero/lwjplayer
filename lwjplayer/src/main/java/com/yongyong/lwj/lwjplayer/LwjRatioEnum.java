@@ -17,10 +17,10 @@ public enum LwjRatioEnum {
     RATIO_16_9,
     /**  */
     RATIO_4_3,
-    /**  */
-    RATIO_1_1,
-    /** 居中 */
+    /** 宽度占满、高度随原高度且居中于屏幕 */
     RATIO_CROP,
+    /** 缩小视频居中展示 */
+    RATIO_SHRINK,
     /** 全屏 */
     RATIO_FULL;
 }

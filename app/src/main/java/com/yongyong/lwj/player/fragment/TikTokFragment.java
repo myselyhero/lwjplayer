@@ -141,27 +141,6 @@ public class TikTokFragment extends BaseFragment {
         }
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (lwjPlayerView != null)
-            lwjPlayerView.onStart();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        if (lwjPlayerView != null)
-            lwjPlayerView.onPause();
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if (lwjPlayerView != null)
-            lwjPlayerView.onRelease();
-    }
-
     /**
      *
      *
@@ -186,8 +165,8 @@ public class TikTokFragment extends BaseFragment {
             return;
         TikTokAdapter.TikTokViewHolder viewHolder = (TikTokAdapter.TikTokViewHolder) itemView.getTag();
         lwjPlayerView = new LwjPlayerView(getContext());
-        lwjPlayerView.setRatio(LwjRatioEnum.RATIO_16_9);
-        //lwjPlayerView.setCore(LwjPlayerView.MEDIA_PLAYER_IJK);
+        lwjPlayerView.setRatio(LwjRatioEnum.RATIO_CROP);
+        lwjPlayerView.setCore(LwjPlayerView.MEDIA_PLAYER_IJK);
         lwjPlayerView.setDataSource(entity.getVideoUrl());
         viewHolder.frameLayout.addView(lwjPlayerView);
         lwjPlayerView.onStart();

@@ -3,6 +3,7 @@
     android:layout_width="match_parent" android:layout_height="match_parent">
     <ImageView
         android:id="@+id/lwj_player_chat_thumbnail"
+        android:visibility="gone"
         android:layout_centerInParent="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

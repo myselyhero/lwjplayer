@@ -82,7 +82,7 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ListViewHolder
 
         public FrameLayout frameLayout;
         public int position;
-        ImageView imageView;
+        public ImageView imageView;
 
         public ListViewHolder(@NonNull View itemView) {
             super(itemView);

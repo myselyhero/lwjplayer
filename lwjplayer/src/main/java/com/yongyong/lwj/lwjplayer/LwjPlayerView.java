@@ -227,6 +227,7 @@ public class LwjPlayerView extends FrameLayout implements LwjPlayerViewInterface
 
     @Override
     public void onStart() {
+
         if (TextUtils.isEmpty(mDataSource)){
             Log.e(TAG, "onStart: url not null!!!");
             return;
@@ -331,6 +332,7 @@ public class LwjPlayerView extends FrameLayout implements LwjPlayerViewInterface
         }
 
         mDrawingInterface.attach(mPlayer);
+        mDrawingInterface.setRatio(mRatioEnum);
         LayoutParams params = new LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT,

@@ -33,15 +33,6 @@ public class LwjTextureView extends TextureView implements LwjDrawingInterface, 
     private LwjPlayerBase mPlayer;
     private Surface mSurface;
 
-    /** 视频旋转 */
-    private int mRotationDegree;
-
-    /**  */
-    private int mVideoWidth,mVideoHeight;
-
-    /** 屏幕尺寸 */
-    private LwjRatioEnum mRatioEnum = LwjRatioEnum.RATIO_DEFAULT;
-
     public LwjTextureView(Context context) {
         super(context);
         setSurfaceTextureListener(this);
@@ -49,7 +40,7 @@ public class LwjTextureView extends TextureView implements LwjDrawingInterface, 
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        int[] measuredSize = doMeasure(widthMeasureSpec, heightMeasureSpec);
+        int[] measuredSize = LwjMeasureHelper.getInstance().onMeasure(widthMeasureSpec, heightMeasureSpec);
         setMeasuredDimension(measuredSize[0], measuredSize[1]);
     }
 
@@ -93,29 +84,27 @@ public class LwjTextureView extends TextureView implements LwjDrawingInterface, 
      */
     public void setVideoSize(int videoWidth, int videoHeight) {
         if (videoWidth > 0 && videoHeight > 0) {
-            mVideoWidth = videoWidth;
-            mVideoHeight = videoHeight;
+            LwjMeasureHelper.getInstance().setVideoSize(videoWidth,videoHeight);
             /** 竖屏 */
-            if (videoHeight > videoWidth) {
-                //竖屏视频，使用居中裁剪
-                mRatioEnum = LwjRatioEnum.RATIO_CROP;
+            /*if (videoHeight > videoWidth) {
+                LwjMeasureHelper.getInstance().setRatioEnum(LwjRatioEnum.RATIO_CROP);
             } else {
-                /** 横屏 */
-                mRatioEnum = LwjRatioEnum.RATIO_DEFAULT;
-            }
+                *//** 横屏 *//*
+                LwjMeasureHelper.getInstance().setRatioEnum(LwjRatioEnum.RATIO_DEFAULT);
+            }*/
             requestLayout();
         }
     }
 
     @Override
     public void setRotationDegree(int degree) {
-        mRotationDegree = degree;
+        LwjMeasureHelper.getInstance().setRotationDegree(degree);
         requestLayout();
     }
 
     @Override
     public void setRatio(LwjRatioEnum ratioEnum) {
-        mRatioEnum = ratioEnum;
+        LwjMeasureHelper.getInstance().setRatioEnum(ratioEnum);
         requestLayout();
     }
 
@@ -135,66 +124,5 @@ public class LwjTextureView extends TextureView implements LwjDrawingInterface, 
             mSurface.release();
         if (mSurfaceTexture != null)
             mSurfaceTexture.release();
-    }
-
-    /**
-     *
-     * @param widthMeasureSpec
-     * @param heightMeasureSpec
-     * @return
-     */
-    private int[] doMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        /** 软解码时处理旋转信息，交换宽高 */
-        if (mRotationDegree == 90 || mRotationDegree == 270) {
-            widthMeasureSpec = widthMeasureSpec + heightMeasureSpec;
-            heightMeasureSpec = widthMeasureSpec - heightMeasureSpec;
-            widthMeasureSpec = widthMeasureSpec - heightMeasureSpec;
-        }
-
-        int width = View.MeasureSpec.getSize(widthMeasureSpec);
-        int height = View.MeasureSpec.getSize(heightMeasureSpec);
-
-        if (mVideoHeight == 0 || mVideoWidth == 0) {
-            return new int[]{width, height};
-        }
-
-        /** 设置了宽高比例 */
-        switch (mRatioEnum){
-            case RATIO_DEFAULT://默认使用原视频高宽
-            default:
-                if (mVideoWidth * height < width * mVideoHeight) {
-                    width = height * mVideoWidth / mVideoHeight;
-                } else if (mVideoWidth * height > width * mVideoHeight) {
-                    height = width * mVideoHeight / mVideoWidth;
-                }
-                break;
-            case RATIO_CROP://居中
-                if (mVideoWidth * height > width * mVideoHeight) {
-                    width = height * mVideoWidth / mVideoHeight;
-                } else {
-                    height = width * mVideoHeight / mVideoWidth;
-                }
-                break;
-            case RATIO_FULL://全屏
-            case RATIO_1_1:
-                width = widthMeasureSpec;
-                height = heightMeasureSpec;
-                break;
-            case RATIO_16_9://
-                if (height > width / 16 * 9) {
-                    height = width / 16 * 9;
-                } else {
-                    width = height / 9 * 16;
-                }
-                break;
-            case RATIO_4_3://
-                if (height > width / 4 * 3) {
-                    height = width / 4 * 3;
-                } else {
-                    width = height / 3 * 4;
-                }
-                break;
-        }
-        return new int[]{width, height};
     }
 }
