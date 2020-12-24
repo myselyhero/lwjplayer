@@ -41,6 +41,7 @@ public class TikTokFragment extends BaseFragment {
     private TikTokAdapter mAdapter;
     private List<TikKotEntity> dataSource = new ArrayList<>();
 
+    /**  */
     private int currentPosition = -1;
 
     @Nullable
@@ -130,14 +131,24 @@ public class TikTokFragment extends BaseFragment {
     }
 
     @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (lwjPlayerView != null)
+            lwjPlayerView.onRelease();
+    }
+
+    @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
         if (!isVisibleToUser){
             if (lwjPlayerView != null)
-                lwjPlayerView.onRelease();
+                lwjPlayerView.onPause();
         }else {
-            /*if (lwjPlayerView != null)
-                lwjPlayerView.onStart();*/
+            if (currentPosition != -1){
+                int i = currentPosition;
+                currentPosition = -1;
+                startPlay(i);
+            }
         }
     }
 

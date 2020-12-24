@@ -1,2 +1,9 @@
 <resources>
+
+
+    <string name="lwj_status_loader">加载中...</string>
+    <string name="lwj_status_fail">呀！挂了挂了！</string>
+    <string name="lwj_status_fail_network">请检查网络环境后再试！</string>
+
+    <string name="lwj_live_streaming_talk">说点什么...</string>
 </resources>

@@ -2,6 +2,7 @@ package com.yongyong.lwj.lwjplayer;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -83,11 +84,14 @@ public class LwjPlayerView extends FrameLayout implements LwjPlayerViewInterface
     private LwjRatioEnum mRatioEnum = LwjRatioEnum.RATIO_DEFAULT;
 
     /** 音频焦点 */
-    private boolean isFocus;
+    private boolean isFocus = true;
     private LwjAudioFocusManager mFocusManager;
 
     /** 播放器核心 */
     private int playerCore = MEDIA_PLAYER;
+
+    /**  */
+    private LwjStatusChangeListener statusChangeListener;
 
     public LwjPlayerView(@NonNull Context context) {
         super(context);
@@ -119,6 +123,12 @@ public class LwjPlayerView extends FrameLayout implements LwjPlayerViewInterface
     @Override
     public void setCore(int core) {
         playerCore = core;
+    }
+
+    @Override
+    public void setOptions() {
+        if (mPlayer != null)
+            mPlayer.setOptions();
     }
 
     @Override
@@ -159,6 +169,11 @@ public class LwjPlayerView extends FrameLayout implements LwjPlayerViewInterface
     @Override
     public long getCurrentPosition() {
         return isUsable() ? mPlayer.getCurrentPosition() : 0;
+    }
+
+    @Override
+    public long getTcpSpeed() {
+        return isUsable() ? mPlayer.getTcpSpeed() : -1;
     }
 
     @Override
@@ -218,6 +233,26 @@ public class LwjPlayerView extends FrameLayout implements LwjPlayerViewInterface
             mFrameLayout.addView(mControllerView, params);
             mControllerView.bindPlayer(this);
         }
+    }
+
+    @Override
+    public void addStatusChangeListener(@NonNull LwjStatusChangeListener listener) {
+        statusChangeListener = listener;
+    }
+
+    @Override
+    public Bitmap screenCapture() {
+        return mDrawingInterface == null ? null : mDrawingInterface.screenCapture();
+    }
+
+    @Override
+    public boolean isLive() {
+        if (TextUtils.isEmpty(mDataSource) || playerCore == MEDIA_PLAYER)
+            return false;
+        if (mDataSource.startsWith("rtmp") || mDataSource.startsWith("rtsp") || mDataSource.endsWith(".mov") || mDataSource.endsWith(".m3u8"))
+            return true;
+        else
+            return false;
     }
 
     @Override
@@ -315,6 +350,8 @@ public class LwjPlayerView extends FrameLayout implements LwjPlayerViewInterface
         mPlayer.init(getContext());
         mPlayer.setLooping(isLooping);
         mPlayer.setDataSource(mDataSource);
+        if (isVoice)
+            setVoice(true);
         mPlayer.prepare();
     }
 
@@ -369,6 +406,8 @@ public class LwjPlayerView extends FrameLayout implements LwjPlayerViewInterface
         mStatusEnum = statusEnum;
         if (mControllerView != null)
             mControllerView.changeStatus(mStatusEnum);
+        if (statusChangeListener != null)
+            statusChangeListener.onChangeStatus(mStatusEnum);
     }
 
     /**

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent">
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:animateLayoutChanges="true">
     <ImageView
         android:id="@+id/lwj_player_chat_thumbnail"
         android:visibility="gone"
@@ -9,12 +10,11 @@
         android:layout_height="wrap_content"
         android:scaleType="centerCrop"/>
 
-    <ImageView
-        android:id="@+id/lwj_player_chat_btn"
+    <com.yongyong.lwj.lwjplayer.LwjStatusView
         android:layout_centerInParent="true"
+        android:id="@+id/lwj_player_chat_status"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/lwj_chat_player"/>
+        android:layout_height="wrap_content"/>
 
     <LinearLayout
         android:id="@+id/lwj_player_chat_controller_background"

@@ -103,6 +103,7 @@ public class LwjSurfaceView extends SurfaceView implements LwjDrawingInterface, 
 
     @Override
     public Bitmap screenCapture() {
+        Log.e(TAG, "screenCapture: SurfaceView No support!");
         return null;
     }
 

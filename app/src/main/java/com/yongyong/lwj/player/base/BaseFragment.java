@@ -1,9 +1,12 @@
 package com.yongyong.lwj.player.base;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
+import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -41,27 +44,6 @@ public abstract class BaseFragment extends Fragment {
         return super.onCreateView(inflater, container, savedInstanceState);
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (lwjPlayerView != null)
-            lwjPlayerView.onStart();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        if (lwjPlayerView != null)
-            lwjPlayerView.onPause();
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if (lwjPlayerView != null)
-            lwjPlayerView.onRelease();
-    }
-
     /**
      * 获取布局ID
      * @return
@@ -72,4 +54,19 @@ public abstract class BaseFragment extends Fragment {
      * 初始化视图
      */
     protected abstract void initView();
+
+    /**
+     *
+     */
+    protected void release(){
+        if (lwjPlayerView != null){
+            /** 释放播放器 */
+            lwjPlayerView.onRelease();
+            /** 从父布局中删除 */
+            ViewParent parent = lwjPlayerView.getParent();
+            if (parent instanceof FrameLayout) {
+                ((FrameLayout) parent).removeView(lwjPlayerView);
+            }
+        }
+    }
 }

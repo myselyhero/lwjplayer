@@ -13,4 +13,21 @@
     <style name="TabLayoutTextStyle">
         <item name="android:textSize">14sp</item>
     </style>
+
+    <style name="customDialog" parent="@android:style/Theme.Dialog">
+        <item name="android:windowFrame">@null</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:background">@android:color/transparent</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowAnimationStyle">@style/tv_window_anim</item>
+        <!--弹窗背景是否变暗-->
+        <!--<item name="android:backgroundDimEnabled">false</item>-->
+    </style>
+
+    <style name="tv_window_anim" parent="android:Animation">
+        <item name="android:windowEnterAnimation">@anim/tv_window_enter</item>  <!--//进入时的动画-->
+        <item name="android:windowExitAnimation">@anim/tv_window_exit</item>    <!--//退出时的动画-->
+    </style>
 </resources>

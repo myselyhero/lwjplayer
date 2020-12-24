@@ -4,6 +4,7 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -17,10 +18,8 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 import com.yongyong.lwj.lwjplayer.LwjStatusEnum;
+import com.yongyong.lwj.lwjplayer.LwjStatusView;
 import com.yongyong.lwj.lwjplayer.R;
-
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * @author yongyong
@@ -37,10 +36,8 @@ public class LwjCommonControllerView extends LwjControllerBaseView implements Vi
 
     /**  */
     private ImageView thumbnailImageView;
-    private ImageView playerButtonImageView;
 
-    /** 缓冲窗口 */
-    private LinearLayout windowBackground;
+    private LwjStatusView statusView;
 
     /** 底部 */
     private ImageView voiceImageView;
@@ -65,23 +62,21 @@ public class LwjCommonControllerView extends LwjControllerBaseView implements Vi
 
     @Override
     protected int getLayoutId() {
-        return R.layout.lwj_player_common_controller_view;
+        return R.layout.lwj_common_controller_view;
     }
 
     @Override
     protected void initView() {
-        thumbnailImageView = findViewById(R.id.lwj_player_common_controller_thumbnail);
-        playerButtonImageView = findViewById(R.id.lwj_player_common_controller_button);
+        thumbnailImageView = findViewById(R.id.lwj_common_controller_thumbnail);
+        statusView = findViewById(R.id.lwj_common_controller_status);
 
-        windowBackground = findViewById(R.id.lwj_player_common_controller_window);
+        voiceImageView = findViewById(R.id.lwj_common_controller_bottom_voice);
+        currentTextView = findViewById(R.id.lwj_common_controller_bottom_current);
+        progressSeekBar = findViewById(R.id.lwj_common_controller_bottom_seek_bar);
+        totalTextView = findViewById(R.id.lwj_common_controller_bottom_total);
+        fullImageView = findViewById(R.id.lwj_common_controller_bottom_full);
 
-        voiceImageView = findViewById(R.id.lwj_player_common_controller_bottom_voice);
-        currentTextView = findViewById(R.id.lwj_player_common_controller_bottom_current);
-        progressSeekBar = findViewById(R.id.lwj_player_common_controller_bottom_seek_bar);
-        totalTextView = findViewById(R.id.lwj_player_common_controller_bottom_total);
-        fullImageView = findViewById(R.id.lwj_player_common_controller_bottom_full);
-
-        playerButtonImageView.setOnClickListener(this);
+        statusView.setOnClickListener(this);
         voiceImageView.setOnClickListener(this);
         fullImageView.setOnClickListener(this);
 
@@ -117,13 +112,13 @@ public class LwjCommonControllerView extends LwjControllerBaseView implements Vi
     }
 
     @Override
-    protected void onClick() {
+    protected void onClick(MotionEvent event) {
 
     }
 
     @Override
-    protected void onDblClick() {
-
+    protected void onDblClick(MotionEvent event) {
+        startAndStop();
     }
 
     /**
@@ -162,51 +157,65 @@ public class LwjCommonControllerView extends LwjControllerBaseView implements Vi
                 totalTextView.setText(longTimeToString(getDuration()));
                 progressSeekBar.setMax((int) getDuration());
                 thumbnailImageView.setVisibility(View.GONE);
-                playerButtonImageView.setVisibility(View.GONE);
+                statusView.onIdle();
                 break;
             case STATUS_BUFFERING:
-                windowBackground.setVisibility(View.VISIBLE);
-                break;
-            case STATUS_BUFFEEND:
-                windowBackground.setVisibility(View.GONE);
+                statusView.onLoader();
                 break;
             case STATUS_PAUSED:
+                statusView.onStop();
+                break;
+            case STATUS_BUFFEEND:
             case STATUS_IDLE:
-                playerButtonImageView.setVisibility(View.VISIBLE);
+            case STATUS_PREPARING:
+                statusView.onIdle();
                 break;
             case STATUS_COMPLETED:
                 thumbnailImageView.setVisibility(View.VISIBLE);
                 break;
-            case STATUS_PREPARING:
-                //thumbnailImageView.setVisibility(View.GONE);
-                break;
             case STATUS_ERROR:
-                Log.e(TAG, "changeStatus: 呀 发生错误了");
+                statusView.onFail();
                 break;
         }
     }
 
     @Override
     public void onClick(View v) {
-        if (v.getId() == R.id.lwj_player_common_controller_button) {
-            /**
-             * 播放暂停
-             */
-            startAndStop();
-        }else if (v.getId() == R.id.lwj_player_common_controller_bottom_voice){
+        if (v.getId() == R.id.lwj_common_controller_status) {
+
+            switch (statusView.getStatusEnum()){
+                case STOP:
+                    /**
+                     * 播放暂停
+                     */
+                    startAndStop();
+                    break;
+                case FAIL:
+                    Log.e(TAG, "onClick: 点击重试");
+                    break;
+            }
+        }else if (v.getId() == R.id.lwj_common_controller_bottom_voice){
             /**
              * 音量开启与关闭
              */
-            if (setVoice(!isVoice())){
-                voiceImageView.setImageResource(R.drawable.lwj_player_voice_off);
-            }else {
-                voiceImageView.setImageResource(R.drawable.lwj_player_voice_on);
-            }
+            setMute(!isVoice());
 
             if (controllerVoiceListener != null)
                 controllerVoiceListener.onVoice(isVoice());
-        }else if (v.getId() == R.id.lwj_player_common_controller_bottom_full){
+        }else if (v.getId() == R.id.lwj_common_controller_bottom_full){
 
+        }
+    }
+
+    /**
+     *
+     * @param mute
+     */
+    public void setMute(boolean mute){
+        if (setVoice(mute)){
+            voiceImageView.setImageResource(R.drawable.lwj_player_voice_off);
+        }else {
+            voiceImageView.setImageResource(R.drawable.lwj_player_voice_on);
         }
     }
 

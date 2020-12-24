@@ -76,7 +76,8 @@ public class ListFragment extends BaseFragment {
                     int lastPosition = linearLayoutManager.findLastCompletelyVisibleItemPosition();
 
                     /** 如果lastPosition是最后一个则播放最后一个 */
-                    startPlay(lastPosition == dataSource.size() -1 ? lastPosition : firstPosition);
+                    //startPlay(lastPosition == dataSource.size() -1 ? lastPosition : firstPosition);
+                    startPlay(firstPosition);
                 }
             }
         });
@@ -136,10 +137,26 @@ public class ListFragment extends BaseFragment {
             recyclerView.post(new Runnable() {
                 @Override
                 public void run() {
-                    startPlay(0);
+                    if (currentPosition == -1) {
+                        startPlay(0);
+                    }else {
+                        int i = currentPosition;
+                        currentPosition = -1;
+                        startPlay(i);
+                    }
                 }
             });
+        }else {
+            if (lwjPlayerView != null)
+                lwjPlayerView.onPause();
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (lwjPlayerView != null)
+            lwjPlayerView.onRelease();
     }
 
     /**

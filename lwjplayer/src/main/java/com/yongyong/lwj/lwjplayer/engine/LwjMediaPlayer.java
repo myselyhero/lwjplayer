@@ -59,6 +59,11 @@ public class LwjMediaPlayer extends LwjPlayerBase {
     }
 
     @Override
+    public void setOptions() {
+
+    }
+
+    @Override
     public void setDataSource(String url) {
         if (mMediaPlayer == null || TextUtils.isEmpty(url))
             return;
@@ -195,6 +200,11 @@ public class LwjMediaPlayer extends LwjPlayerBase {
             params.setSpeed(speed.getSpeed());
             mMediaPlayer.setPlaybackParams(params);
         }
+    }
+
+    @Override
+    public long getTcpSpeed() {
+        return -1;
     }
 
     @Override

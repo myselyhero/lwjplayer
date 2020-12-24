@@ -24,6 +24,11 @@ public abstract class LwjPlayerBase {
     public abstract void init(Context context);
 
     /**
+     *
+     */
+    public abstract void setOptions();
+
+    /**
      * 数据源
      *
      * @param url 播放地址
@@ -119,6 +124,12 @@ public abstract class LwjPlayerBase {
      * 设置播放速度
      */
     public abstract void setSpeed(LwjSpeedLevelEnum speed);
+
+    /**
+     *
+     * @return
+     */
+    public abstract long getTcpSpeed();
 
     /**
      *

@@ -104,13 +104,13 @@ public abstract class LwjControllerBaseView extends FrameLayout implements Gestu
 
     @Override
     public boolean onSingleTapConfirmed(MotionEvent e) {
-        onClick();
+        onClick(e);
         return true;
     }
 
     @Override
     public boolean onDoubleTap(MotionEvent e) {
-        onDblClick();
+        onDblClick(e);
         return true;
     }
 
@@ -184,13 +184,15 @@ public abstract class LwjControllerBaseView extends FrameLayout implements Gestu
 
     /**
      * 单击
+     * @param event
      */
-    protected abstract void onClick();
+    protected abstract void onClick(MotionEvent event);
 
     /**
      * 双击
+     * @param event
      */
-    protected abstract void onDblClick();
+    protected abstract void onDblClick(MotionEvent event);
 
     /**
      * 更新缓冲值
@@ -203,6 +205,14 @@ public abstract class LwjControllerBaseView extends FrameLayout implements Gestu
      * @param position
      */
     public abstract void currencyPosition(long position);
+
+    /**
+     *
+     * @return
+     */
+    protected long getTcpSpeed(){
+        return mLwjPlayer == null ? -1 : mLwjPlayer.getTcpSpeed();
+    }
 
     /**
      * 改变播放器状态
@@ -240,6 +250,11 @@ public abstract class LwjControllerBaseView extends FrameLayout implements Gestu
      */
     private void startProgress(){
         stopProgress();
+
+        /** 如果是拉流不进行刷新 */
+        if (mLwjPlayer == null || mLwjPlayer.isLive())
+            return;
+
         progressTimer = new Timer();
         progressTimer.schedule(new TimerTask() {
             @Override
