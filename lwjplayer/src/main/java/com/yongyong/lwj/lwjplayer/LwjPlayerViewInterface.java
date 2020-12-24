@@ -1,5 +1,7 @@
 package com.yongyong.lwj.lwjplayer;
 
+import android.graphics.Bitmap;
+
 import androidx.annotation.NonNull;
 
 import com.yongyong.lwj.lwjplayer.view.LwjControllerBaseView;
@@ -18,6 +20,11 @@ public interface LwjPlayerViewInterface {
      * @param core
      */
     void setCore(int core);
+
+    /**
+     *
+     */
+    void setOptions();
 
     /**
      * 设置数据源
@@ -55,6 +62,12 @@ public interface LwjPlayerViewInterface {
      * @return 当前播放进度
      */
     long getCurrentPosition();
+
+    /**
+     *
+     * @return
+     */
+    long getTcpSpeed();
 
     /**
      * 是否获取音频焦点、默认获取
@@ -109,6 +122,24 @@ public interface LwjPlayerViewInterface {
      * @param controllerBaseView
      */
     void setControllerView(@NonNull LwjControllerBaseView controllerBaseView);
+
+    /**
+     * 设置播放器状态监听 用于为设置控制器时使用
+     * @param listener
+     */
+    void addStatusChangeListener(@NonNull LwjStatusChangeListener listener);
+
+    /**
+     * 截图
+     * @return
+     */
+    Bitmap screenCapture();
+
+    /**
+     * 是否是拉流
+     * @return
+     */
+    boolean isLive();
 
     /**
      * 是否正在播放

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -18,6 +19,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 import com.yongyong.lwj.lwjplayer.LwjStatusEnum;
+import com.yongyong.lwj.lwjplayer.LwjStatusView;
 import com.yongyong.lwj.lwjplayer.R;
 
 import java.util.Timer;
@@ -37,7 +39,8 @@ public class LwjChatControllerView extends LwjControllerBaseView implements View
     private static final String TAG = "LwjPlayerChatController";
 
     private ImageView mThumbnailImageView;
-    private ImageView mPlayerButtonImageView;
+
+    private LwjStatusView statusView;
 
     private LinearLayout mControllerBackground;
     private TextView mCurrentTextView;
@@ -77,7 +80,7 @@ public class LwjChatControllerView extends LwjControllerBaseView implements View
     @Override
     protected void initView() {
         mThumbnailImageView = findViewById(R.id.lwj_player_chat_thumbnail);
-        mPlayerButtonImageView = findViewById(R.id.lwj_player_chat_btn);
+        statusView = findViewById(R.id.lwj_player_chat_status);
         mControllerBackground = findViewById(R.id.lwj_player_chat_controller_background);
         mCurrentTextView = findViewById(R.id.lwj_player_chat_controller_current);
         mSeekBar = findViewById(R.id.lwj_player_chat_controller_seek);
@@ -88,7 +91,7 @@ public class LwjChatControllerView extends LwjControllerBaseView implements View
         mCollectImageView = findViewById(R.id.lwj_player_chat_function_collect);
         downloadImageView = findViewById(R.id.lwj_player_chat_function_download);
 
-        mPlayerButtonImageView.setOnClickListener(this);
+        statusView.setOnClickListener(this);
         mBacktrackImageView.setOnClickListener(this);
         mShareImageView.setOnClickListener(this);
         mCollectImageView.setOnClickListener(this);
@@ -126,12 +129,26 @@ public class LwjChatControllerView extends LwjControllerBaseView implements View
     }
 
     @Override
+    protected void onClick(MotionEvent event) {
+        startController();
+    }
+
+    @Override
+    protected void onDblClick(MotionEvent event) {
+        startAndStop();
+    }
+
+    @Override
     public void onClick(View v) {
-        if (v.getId() == R.id.lwj_player_chat_btn) {
-            /**
-             * 播放暂停
-             */
-            startAndStop();
+        if (v.getId() == R.id.lwj_player_chat_status) {
+            switch (statusView.getStatusEnum()){
+                case STOP:
+                    /**
+                     * 播放暂停
+                     */
+                    startAndStop();
+                    break;
+            }
         }else if (v.getId() == R.id.lwj_player_chat_function_backtrack){
             if (controllerListener != null)
                 controllerListener.onClick(v,LWJ_PLAYER_CHAT_CONTROLLER_BACKTRACK);
@@ -145,16 +162,6 @@ public class LwjChatControllerView extends LwjControllerBaseView implements View
             if (controllerListener != null)
                 controllerListener.onClick(v,LWJ_PLAYER_CHAT_CONTROLLER_DOWNLOAD);
         }
-    }
-
-    @Override
-    protected void onClick() {
-        startController();
-    }
-
-    @Override
-    protected void onDblClick() {
-        startAndStop();
     }
 
     @Override
@@ -179,27 +186,26 @@ public class LwjChatControllerView extends LwjControllerBaseView implements View
             case STATUS_PLAYING:
                 mDurationTextView.setText(longTimeToString(getDuration()));
                 mSeekBar.setMax((int) getDuration());
+                statusView.onIdle();
                 hideControllerAnim(mThumbnailImageView);
-                hideControllerAnim(mPlayerButtonImageView);
                 break;
             case STATUS_BUFFERING:
-
-                break;
-            case STATUS_BUFFEEND:
-
+                statusView.onLoader();
                 break;
             case STATUS_PAUSED:
-            case STATUS_IDLE:
-                showControllerAnim(mPlayerButtonImageView);
+                statusView.onStop();
                 break;
             case STATUS_COMPLETED:
+                statusView.onIdle();
                 showControllerAnim(mThumbnailImageView);
                 break;
             case STATUS_PREPARING:
-                //thumbnailImageView.setVisibility(View.GONE);
+            case STATUS_IDLE:
+            case STATUS_BUFFEEND:
+                statusView.onIdle();
                 break;
             case STATUS_ERROR:
-                Log.e(TAG, "changeStatus: 呀 发生错误了");
+                statusView.onFail();
                 break;
         }
     }

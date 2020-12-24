@@ -34,17 +34,11 @@ import java.util.List;
  */
 public class MainActivity extends BaseActivity implements View.OnClickListener {
 
-    private LinearLayout tikBackground;
     private TextView tikTextView;
-    private ImageView tikImageView;
 
-    private LinearLayout listBackground;
     private TextView listTextView;
-    private ImageView listImageView;
 
-    private LinearLayout tvBackground;
     private TextView tvTextView;
-    private ImageView tvImageView;
 
     private int oldPosition = -1;
 
@@ -75,23 +69,17 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     @Override
     protected void initView() {
         viewPager = findViewById(R.id.main_pager);
-        tikBackground = findViewById(R.id.main_tab_tik);
-        tikTextView = findViewById(R.id.main_tab_tik_tv);
-        tikImageView = findViewById(R.id.main_tab_tik_iv);
+        tikTextView = findViewById(R.id.main_tab_tik);
 
-        listBackground = findViewById(R.id.main_tab_list);
-        listTextView = findViewById(R.id.main_tab_list_tv);
-        listImageView = findViewById(R.id.main_tab_list_iv);
+        listTextView = findViewById(R.id.main_tab_list);
 
-        tvBackground = findViewById(R.id.main_tab_stream);
-        tvTextView = findViewById(R.id.main_tab_stream_tv);
-        tvImageView = findViewById(R.id.main_tab_stream_iv);
+        tvTextView = findViewById(R.id.main_tab_stream);
 
         onSelected(0);
 
-        tikBackground.setOnClickListener(this);
-        listBackground.setOnClickListener(this);
-        tvBackground.setOnClickListener(this);
+        tikTextView.setOnClickListener(this);
+        listTextView.setOnClickListener(this);
+        tvTextView.setOnClickListener(this);
 
         ViewPagerEntity entity = new ViewPagerEntity();
         entity.setTitle(getString(R.string.main_tab_tik_tok));
@@ -156,15 +144,12 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         switch (position){
             case 0:
                 tikTextView.setTextColor(getResources().getColor(R.color.theme_color));
-                tikImageView.setImageResource(R.drawable.main_tik_tok_press);
                 break;
             case 1:
                 listTextView.setTextColor(getResources().getColor(R.color.theme_color));
-                listImageView.setImageResource(R.drawable.main_list_press);
                 break;
             case 2:
                 tvTextView.setTextColor(getResources().getColor(R.color.theme_color));
-                tvImageView.setImageResource(R.drawable.main_tv_press);
                 break;
         }
         viewPager.setCurrentItem(position);
@@ -176,13 +161,10 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
      */
     private void clear(){
         tikTextView.setTextColor(getResources().getColor(R.color.white));
-        tikImageView.setImageResource(R.drawable.main_tik_tok_normal);
 
         listTextView.setTextColor(getResources().getColor(R.color.white));
-        listImageView.setImageResource(R.drawable.main_list_normal);
 
         tvTextView.setTextColor(getResources().getColor(R.color.white));
-        tvImageView.setImageResource(R.drawable.main_tv_normal);
     }
 
     @Override

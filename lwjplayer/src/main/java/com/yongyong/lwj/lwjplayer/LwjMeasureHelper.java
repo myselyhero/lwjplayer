@@ -1,6 +1,5 @@
 package com.yongyong.lwj.lwjplayer;
 
-import android.util.Log;
 import android.view.View;
 
 /**
